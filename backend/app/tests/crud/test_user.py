@@ -4,6 +4,8 @@ from sqlmodel import Session
 from app import crud
 from app.core.security import verify_password
 from app.models import User, UserCreate, UserUpdate
+from app.repositories.user import UserRepository
+from app.services.login import LoginService
 from app.tests.utils.utils import random_email, random_lower_string
 
 
@@ -21,7 +23,7 @@ def test_authenticate_user(db: Session) -> None:
     password = random_lower_string()
     user_in = UserCreate(email=email, password=password)
     user = crud.create_user(session=db, user_create=user_in)
-    authenticated_user = crud.authenticate(session=db, email=email, password=password)
+    authenticated_user = LoginService.authenticate(session=db, email=email, password=password)
     assert authenticated_user
     assert user.email == authenticated_user.email
 
@@ -29,7 +31,7 @@ def test_authenticate_user(db: Session) -> None:
 def test_not_authenticate_user(db: Session) -> None:
     email = random_email()
     password = random_lower_string()
-    user = crud.authenticate(session=db, email=email, password=password)
+    user = LoginService.authenticate(session=db, email=email, password=password)
     assert user is None
 
 
@@ -37,7 +39,7 @@ def test_check_if_user_is_active(db: Session) -> None:
     email = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=email, password=password)
-    user = crud.create_user(session=db, user_create=user_in)
+    user = UserRepository.create(session=db, user_create=user_in)
     assert user.is_active is True
 
 
